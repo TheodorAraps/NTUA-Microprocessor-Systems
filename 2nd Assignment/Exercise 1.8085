@@ -1,0 +1,52 @@
+;(a)
+	START:
+		IN 10H
+		MVI A,00H    ;A register will hold the value that we want to store
+		LXI H,0900H  ;HL registers will hold the address 
+		MOV M,A
+	STORE:
+		INR A        ;We increment A and M (HL registers) 
+		INX H        ;and store the value of A to the address
+		MOV M,A      ;stored in M
+		CPI FFH      ;If A<255 repeat
+		JNZ STORE	
+;(b)
+		LXI B,0000H  ;Initialisation of BC
+	LOAD:
+		MOV A,M      ;M=09FFH from before
+		MVI D,09H    ;We set D=9 because we want to check each digit and also the
+ALL_DIGITS:		   ;the algorithm starts by decreasing D so we "lose" one iteration
+		DCR D        
+		JZ NEXT      ;If D=0 load next number
+		RRC          
+		JNC ALL_DIGITS  ;If CY=1 then count else repeat
+COUNT_ONES:
+		INX B
+		JMP ALL_DIGITS
+	NEXT:
+		DCR L        ;Decrease L until it reaches zero
+		JNZ LOAD     ;If L!=0 Load next else finish
+;(c)	
+		MVI E,FFH
+		MVI D,00H    ;Initialise D
+		MOV A,M      ;Load first Number (M=0900H from before)
+STATEMENT:
+		CPI 10H      ;If A<10H DONT_COUNT else continue
+		JC DONT_COUNT
+		CPI 61H      ;If A>60H DONT_COUNT else continue
+		JNC DONT_COUNT
+		INR D        ;Count
+DONT_COUNT:	
+		INR L        ;Load next number
+		MOV A,M
+		DCR E
+		JZ CHECK_LAST   ;If E=00H CHECK_LAST else jump to STATEMENT
+		JMP STATEMENT
+CHECK_LAST:
+		CPI 10H      
+		JC END
+		CPI 61H      
+		JNC END
+		INR D        		
+	END:
+		END

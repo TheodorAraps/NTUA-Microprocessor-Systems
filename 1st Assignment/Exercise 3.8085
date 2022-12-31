@@ -1,0 +1,37 @@
+START: 
+	LDA 2000H	
+	CPI 64H     ;Is it greater than 99? (A-99)
+	JNC CASE1   ;If yes then jump to CASE1 (A>99)
+	MVI D,FFH   ;Else A<=99
+DECA:
+	INR D
+	SUI 0AH     ;While A>10 do A-10
+	JNC DECA    ;If A>0 continue
+	ADI 0AH     ;Correct negative remainder
+	MOV E,A     ;Save units in E
+	MOV A,D     ;save tens in A
+	RLC
+	RLC
+	RLC
+	RLC         ;Move the value of tens to the 4 MSB of A
+	ADD E       ;Add units to A so that we have: tens->MSB, units->LSB
+	CMA         ;Get the supplement of A beacause LED lights switch on 0 value
+	STA 3000H   ;Output A (LED lights turn on indicating the value of A as implied above)
+	JMP START
+CASE1:
+	CPI C8H     ;Is it greater than 199 (A-99)
+	JNC CASE2   ;If yes then jump to CASE2 (A>199)
+	MVI A,F0H   ;A = 1111 0000, 4 most right LEDs switch on 
+	STA 3000H
+	MVI A,FFH   ;A = 1111 1111, 4 most right LEDs switch off 
+	STA 3000H
+	JMP START   ;Jump to start and repeat until we get a new input
+CASE2:
+	MVI A,0FH   ;A = 0000 1111, 4 most left LEDs switch on 
+	STA 3000H
+	MVI A,FFH   ;A = 1111 1111, 4 most left LEDs switch off 
+	STA 3000H
+	JMP START   ;Jump to start and repeat until we get a new input
+	
+	END
+	
